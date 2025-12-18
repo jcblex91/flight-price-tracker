@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Tracker Dash</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-10">
+    <div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-md">
+        <h1 class="text-2xl font-bold mb-6 text-blue-600">Flight Price Tracker</h1>
+        
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <input id="origin" type="text" placeholder="Origin (e.g. SFO)" class="border p-2 rounded">
+            <input id="dest" type="text" placeholder="Dest (e.g. JFK)" class="border p-2 rounded">
+            <input id="date" type="date" class="border p-2 rounded col-span-2">
+            <button onclick="searchFlights()" class="bg-blue-600 text-white p-2 rounded col-span-2 hover:bg-blue-700">
+                Track Prices
+            </button>
+        </div>
+
+        <div id="results" class="space-y-4">
+            </div>
+    </div>
+
+    <script>
+        async function searchFlights() {
+            const origin = document.getElementById('origin').value;
+            const dest = document.getElementById('dest').value;
+            const date = document.getElementById('date').value;
+            const resultsDiv = document.getElementById('results');
+
+            resultsDiv.innerHTML = "Searching...";
+
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/search?origin=${origin}&dest=${dest}&date=${date}`);
+                const data = await response.json();
+
+                resultsDiv.innerHTML = data.map(flight => `
+                    <div class="border-l-4 border-green-500 bg-green-50 p-4 flex justify-between items-center rounded">
+                        <div>
+                            <p class="font-bold text-lg">${flight.itineraries[0].segments[0].carrierCode} Airline</p>
+                            <p class="text-sm text-gray-600">Price includes tax & fees</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-2xl font-bold text-green-700">$${flight.price.total}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                resultsDiv.innerHTML = "Error fetching data. Ensure backend is running.";
+            }
+        }
+    </script>
+</body>
+</html>
